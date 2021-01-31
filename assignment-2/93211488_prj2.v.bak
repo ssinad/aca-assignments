@@ -1,0 +1,570 @@
+module wallace_tree_multiplier(a, b, p);
+	parameter n = 8;
+	
+	input [n - 1:0] a, b;
+	output [2 * n - 1: 0] p;
+	
+	wire [n - 1:0] pp [0:n - 1];
+	
+	genvar cnt;
+	//Generating partial products
+	generate
+		for (cnt = 0; cnt < n; cnt = cnt + 1)begin:partial_products
+			assign pp[cnt] = a & {n{b[cnt]}};
+		end
+	endgenerate
+	
+	wire [0:0] q0, q14;
+	wire [1:0] q1, q13;
+	wire [2:0] q2, q12;
+	wire [3:0] q3, q11;
+	wire [4:0] q4, q10;
+	wire [5:0] q5, q9;
+	wire [6:0] q6, q8;
+	wire [7:0] q7;
+	
+	wire [0:0] x0, x1, x14;
+	wire [1:0] x2, x13;
+	wire [2:0] x3, x4;
+	wire [3:0] x5, x10, x11, x12;
+	wire [4:0] x6;
+	wire [5:0] x7, x8, x9;
+	
+	wire [0:0] y0, y1, y2;
+	wire [1:0] y3, y4, y13, y14;
+	wire [2:0] y5, y6, y11, y12;
+	wire [3:0] y7, y8, y9, y10;
+	
+	wire [0:0] z0, z1, z2, z3;
+	wire [1:0] z4, z5, z6, z14;
+	wire [2:0] z7, z8, z9, z10, z11, z12, z13;
+	
+	wire [0:0] o0, o1, o2, o3, o4, o15;
+	wire [1:0] o5, o6, o7, o8, o9, o10, o11, o12, o13, o14;
+	
+	assign q0 = {pp[0][0]};
+	assign q1 = {pp[0][1], pp[1][0]};
+	assign q2 = {pp[0][2], pp[1][1], pp[2][0]};
+	assign q3 = {pp[0][3], pp[1][2], pp[2][1], pp[3][0]};
+	assign q4 = {pp[0][4], pp[1][3], pp[2][2], pp[3][1], pp[4][0]};
+	assign q5 = {pp[0][5], pp[1][4], pp[2][3], pp[3][2], pp[4][1], pp[5][0]};
+	assign q6 = {pp[0][6], pp[1][5], pp[2][4], pp[3][3], pp[4][2], pp[5][1], pp[6][0]};
+	assign q7 = {pp[0][7], pp[1][6], pp[2][5], pp[3][4], pp[4][3], pp[5][2], pp[6][1], pp[7][0]};
+	assign q8 = {pp[1][7], pp[2][6], pp[3][5], pp[4][4], pp[5][3], pp[6][2], pp[7][1]};
+	assign q9 = {pp[2][7], pp[3][6], pp[4][5], pp[5][4], pp[6][3], pp[7][2]};
+	assign q10 = {pp[3][7], pp[4][6], pp[5][5], pp[6][4], pp[7][3]};
+	assign q11 = {pp[4][7], pp[5][6], pp[6][5], pp[7][4]};
+	assign q12 = {pp[5][7], pp[6][6], pp[7][5]};
+	assign q13 = {pp[6][7], pp[7][6]};
+	assign q14 = {pp[7][7]};
+	
+	first_level fl(
+	x14, 
+	x13,
+	x12,
+	x11,
+	x10,
+	x9,
+	x8,
+	x7,
+	x6,
+	x5,
+	x4,
+	x3,
+	x2,
+	x1,
+	x0,
+	q14, 
+	q13,
+	q12,
+	q11,
+	q10,
+	q9,
+	q8,
+	q7,
+	q6,
+	q5,
+	q4,
+	q3,
+	q2,
+	q1,
+	q0);
+	
+	second_level sl(
+	y14, 
+	y13,
+	y12,
+	y11,
+	y10,
+	y9,
+	y8,
+	y7,
+	y6,
+	y5,
+	y4,
+	y3,
+	y2,
+	y1,
+	y0,
+	x14, 
+	x13,
+	x12,
+	x11,
+	x10,
+	x9,
+	x8,
+	x7,
+	x6,
+	x5,
+	x4,
+	x3,
+	x2,
+	x1,
+	x0);
+	
+	third_level l3(
+	z14, 
+	z13,
+	z12,
+	z11,
+	z10,
+	z9,
+	z8,
+	z7,
+	z6,
+	z5,
+	z4,
+	z3,
+	z2,
+	z1,
+	z0,
+	y14, 
+	y13,
+	y12,
+	y11,
+	y10,
+	y9,
+	y8,
+	y7,
+	y6,
+	y5,
+	y4,
+	y3,
+	y2,
+	y1,
+	y0);
+	
+	fourth_level l4(
+	o14, 
+	o13,
+	o12,
+	o11,
+	o10,
+	o9,
+	o8,
+	o7,
+	o6,
+	o5,
+	o4,
+	o3,
+	o2,
+	o1,
+	o0,
+	z14, 
+	z13,
+	z12,
+	z11,
+	z10,
+	z9,
+	z8,
+	z7,
+	z6,
+	z5,
+	z4,
+	z3,
+	z2,
+	z1,
+	z0);
+	
+	final_adder final_add(
+	o15,
+	o14, 
+	o13,
+	o12,
+	o11,
+	o10,
+	o9,
+	o8,
+	o7,
+	o6,
+	o5,
+	o4,
+	o3,
+	o2,
+	o1,
+	o0,
+	p
+	);
+
+endmodule
+
+module first_level(
+	w14, 
+	w13,
+	w12,
+	w11,
+	w10,
+	w9,
+	w8,
+	w7,
+	w6,
+	w5,
+	w4,
+	w3,
+	w2,
+	w1,
+	w0,
+	p14, 
+	p13,
+	p12,
+	p11,
+	p10,
+	p9,
+	p8,
+	p7,
+	p6,
+	p5,
+	p4,
+	p3,
+	p2,
+	p1,
+	p0);
+
+	input [0:0] p0, p14;
+	input [1:0] p1, p13;
+	input [2:0] p2, p12;
+	input [3:0] p3, p11;
+	input [4:0] p4, p10;
+	input [5:0] p5, p9;
+	input [6:0] p6, p8;
+	input [7:0] p7;
+	
+	output [0:0] w0, w1, w14;
+	output [1:0] w2, w13;
+	output [2:0] w3, w4;
+	output [3:0] w5, w10, w11, w12;
+	output [4:0] w6;
+	output [5:0] w7, w8, w9;
+	
+	//Order: Level's own bits > Sums of that level > Carries of the previous level
+	
+	assign w0 = p0;
+	
+	HA ha1(.a(p1[0]), .b(p1[1]), .cout(w2[0]), .S(w1[0]));
+	
+	FA fa2(.a(p2[0]), .b(p2[1]), .ci(p2[2]), .cout(w3[0]), .S(w2[1]));
+	
+	FA fa3(.a(p3[0]), .b(p3[1]), .ci(p3[2]), .cout(w4[0]), .S(w3[1]));
+	assign w3[2] = p3[3];
+	
+	FA fa4(.a(p4[0]), .b(p4[1]), .ci(p4[2]), .cout(w5[0]), .S(w4[1]));
+	HA ha4(.a(p4[3]), .b(p4[4]), .cout(w5[1]), .S(w4[2]));
+	
+	FA fa5_1(.a(p5[0]), .b(p5[1]), .ci(p5[2]), .cout(w6[0]), .S(w5[2]));
+	FA fa5_2(.a(p5[3]), .b(p5[4]), .ci(p5[5]), .cout(w6[1]), .S(w5[3]));
+	
+	FA fa6_1(.a(p6[0]), .b(p6[1]), .ci(p6[2]), .cout(w7[0]), .S(w6[2]));
+	FA fa6_2(.a(p6[3]), .b(p6[4]), .ci(p6[5]), .cout(w7[1]), .S(w6[3]));
+	assign w6[4] = p6[6];
+	
+	FA fa7_1(.a(p7[0]), .b(p7[1]), .ci(p7[2]), .cout(w8[0]), .S(w7[2]));
+	FA fa7_2(.a(p7[3]), .b(p7[4]), .ci(p7[5]), .cout(w8[1]), .S(w7[3]));
+	assign w7[5:4] = p7[7:6];
+	
+	HA ha8(.a(p8[0]), .b(p8[1]), .cout(w9[0]), .S(w8[2]));
+	FA fa8(.a(p8[2]), .b(p8[3]), .ci(p8[4]), .cout(w9[1]), .S(w8[3]));
+	assign w8[5:4] = p8[6:5];
+	
+	assign w9[2] = p9[0];
+	FA fa9(.a(p9[1]), .b(p9[2]), .ci(p9[3]), .cout(w10[0]), .S(w9[3]));
+	assign w9[5:4] = p9[5:4]; 
+	
+	FA fa10(.a(p10[0]), .b(p10[1]), .ci(p10[2]), .cout(w11[0]), .S(w10[1]));
+	assign w10[3:2] = p10[4:3];
+	
+	HA ha11(.a(p11[0]), .b(p11[1]), .cout(w12[0]), .S(w11[1]));
+	assign w11[3:2] = p11[3:2];
+	
+	assign w12[3:1] = p12[2:0];
+	
+	assign w13 = p13, w14 = p14;
+	
+endmodule
+
+module second_level(
+	w14, 
+	w13,
+	w12,
+	w11,
+	w10,
+	w9,
+	w8,
+	w7,
+	w6,
+	w5,
+	w4,
+	w3,
+	w2,
+	w1,
+	w0,
+	p14, 
+	p13,
+	p12,
+	p11,
+	p10,
+	p9,
+	p8,
+	p7,
+	p6,
+	p5,
+	p4,
+	p3,
+	p2,
+	p1,
+	p0);
+	
+	input [0:0] p0, p1, p14;
+	input [1:0] p2, p13;
+	input [2:0] p3, p4;
+	input [3:0] p5, p10, p11, p12;
+	input [4:0] p6;
+	input [5:0] p7, p8, p9;
+	
+	output [0:0] w0, w1, w2;
+	output [1:0] w3, w4, w13, w14;
+	output [2:0] w5, w6, w11, w12;
+	output [3:0] w7, w8, w9, w10;
+	
+	assign w0 = p0, w1 = p1;
+	
+	HA ha2(.a(p2[0]), .b(p2[1]), .cout(w3[0]), .S(w2[0]));
+	
+	FA fa3(.a(p3[0]), .b(p3[1]), .ci(p3[2]), .cout(w4[0]), .S(w3[1]));
+	
+	FA fa4(.a(p4[0]), .b(p4[1]), .ci(p4[2]), .cout(w5[0]), .S(w4[1]));
+	
+	FA fa5(.a(p5[0]), .b(p5[1]), .ci(p5[2]), .cout(w6[0]), .S(w5[1]));
+	assign w5[2] = p5[3];
+	
+	FA fa6(.a(p6[0]), .b(p6[1]), .ci(p6[2]), .cout(w7[0]), .S(w6[1]));
+	HA ha6(.a(p6[3]), .b(p6[4]), .cout(w7[1]), .S(w6[2]));
+	
+	FA fa7_1(.a(p7[0]), .b(p7[1]), .ci(p7[2]), .cout(w8[0]), .S(w7[2]));
+	FA fa7_2(.a(p7[3]), .b(p7[4]), .ci(p7[5]), .cout(w8[1]), .S(w7[3]));
+	
+	FA fa8_1(.a(p8[0]), .b(p8[1]), .ci(p8[2]), .cout(w9[0]), .S(w8[2]));
+	FA fa8_2(.a(p8[3]), .b(p8[4]), .ci(p8[5]), .cout(w9[1]), .S(w8[3]));
+	
+	FA fa9_1(.a(p9[0]), .b(p9[1]), .ci(p9[2]), .cout(w10[0]), .S(w9[2]));
+	FA fa9_2(.a(p9[3]), .b(p9[4]), .ci(p9[5]), .cout(w10[1]), .S(w9[3]));
+	
+	assign w10[2] = p10[0];
+	FA fa10(.a(p10[1]), .b(p10[2]), .ci(p10[3]), .cout(w11[0]), .S(w10[3]));
+	
+	assign w11[1] = p11[0];
+	FA fa11(.a(p11[1]), .b(p11[2]), .ci(p11[3]), .cout(w12[0]), .S(w11[2]));
+	
+	assign w12[1] = p12[0];
+	FA fa12(.a(p12[1]), .b(p12[2]), .ci(p12[3]), .cout(w13[0]), .S(w12[2]));
+	
+	HA ha13(.a(p13[0]), .b(p13[1]), .cout(w14[0]), .S(w13[1]));
+	
+	assign w14[1] = p14;
+	
+endmodule
+
+module third_level(
+	w14, 
+	w13,
+	w12,
+	w11,
+	w10,
+	w9,
+	w8,
+	w7,
+	w6,
+	w5,
+	w4,
+	w3,
+	w2,
+	w1,
+	w0,
+	p14, 
+	p13,
+	p12,
+	p11,
+	p10,
+	p9,
+	p8,
+	p7,
+	p6,
+	p5,
+	p4,
+	p3,
+	p2,
+	p1,
+	p0);
+	
+	input [0:0] p0, p1, p2;
+	input [1:0] p3, p4, p13, p14;
+	input [2:0] p5, p6, p11, p12;
+	input [3:0] p7, p8, p9, p10;
+	
+	output [0:0] w0, w1, w2, w3;
+	output [1:0] w4, w5, w6, w14;
+	output [2:0] w7, w8, w9, w10, w11, w12, w13;
+	
+	assign w0 = p0, w1 = p1, w2 = p2;
+	
+	HA ha3(.a(p3[0]), .b(p3[1]), .cout(w4[0]), .S(w3));
+	
+	HA ha4(.a(p4[0]), .b(p4[1]), .cout(w5[0]), .S(w4[1]));
+	
+	FA fa5(.a(p5[0]), .b(p5[1]), .ci(p5[2]), .cout(w6[0]), .S(w5[1]));
+	
+	FA fa6(.a(p6[0]), .b(p6[1]), .ci(p6[2]), .cout(w7[0]), .S(w6[1]));
+	
+	FA fa7(.a(p7[0]), .b(p7[1]), .ci(p7[2]), .cout(w8[0]), .S(w7[1]));
+	assign w7[2] = p7[3];
+	
+	FA fa8(.a(p8[0]), .b(p8[1]), .ci(p8[2]), .cout(w9[0]), .S(w8[1]));
+	assign w8[2] = p8[3];
+	
+	FA fa9(.a(p9[0]), .b(p9[1]), .ci(p9[2]), .cout(w10[0]), .S(w9[1]));
+	assign w9[2] = p9[3];
+	
+	FA fa10(.a(p10[0]), .b(p10[1]), .ci(p10[2]), .cout(w11[0]), .S(w10[1]));
+	assign w10[2] = p10[3];
+	
+	HA ha11(.a(p11[0]), .b(p11[1]), .cout(w12[0]), .S(w11[1]));
+	assign w11[2] = p11[2];
+	
+	HA ha12(.a(p12[0]), .b(p12[1]), .cout(w13[0]), .S(w12[1]));
+	assign w12[2] = p12[2];
+	
+	assign w13[2:1] = p13;
+	
+	assign w14 = p14;
+	
+endmodule
+
+module fourth_level(
+	w15,
+	w14, 
+	w13,
+	w12,
+	w11,
+	w10,
+	w9,
+	w8,
+	w7,
+	w6,
+	w5,
+	w4,
+	w3,
+	w2,
+	w1,
+	w0,
+	p14, 
+	p13,
+	p12,
+	p11,
+	p10,
+	p9,
+	p8,
+	p7,
+	p6,
+	p5,
+	p4,
+	p3,
+	p2,
+	p1,
+	p0);
+	
+	input [0:0] p0, p1, p2, p3;
+	input [1:0] p4, p5, p6, p14;
+	input [2:0] p7, p8, p9, p10, p11, p12, p13;
+	
+	output [0:0] w0, w1, w2, w3, w4, w15;
+	output [1:0] w5, w6, w7, w8, w9, w10, w11, w12, w13, w14;
+	
+	assign w0 = p0;
+	
+	assign w1 = p1;
+	
+	assign w2 = p2;
+	
+	assign w3 = p3;
+	
+	HA ha4(.a(p4[0]), .b(p4[1]), .cout(w5[0]), .S(w4[0]));
+	
+	HA ha5(.a(p5[0]), .b(p5[1]), .cout(w6[0]), .S(w5[1]));
+	
+	HA ha6(.a(p6[0]), .b(p6[1]), .cout(w7[0]), .S(w6[1]));
+	
+	FA fa7(.a(p7[0]), .b(p7[1]), .ci(p7[2]), .cout(w8[0]), .S(w7[1]));
+	
+	FA fa8(.a(p8[0]), .b(p8[1]), .ci(p8[2]), .cout(w9[0]), .S(w8[1]));
+	
+	FA fa9(.a(p9[0]), .b(p9[1]), .ci(p9[2]), .cout(w10[0]), .S(w9[1]));
+	
+	FA fa10(.a(p10[0]), .b(p10[1]), .ci(p10[2]), .cout(w11[0]), .S(w10[1]));
+	
+	FA fa11(.a(p11[0]), .b(p11[1]), .ci(p11[2]), .cout(w12[0]), .S(w11[1]));
+	
+	FA fa12(.a(p12[0]), .b(p12[1]), .ci(p12[2]), .cout(w13[0]), .S(w12[1]));
+	
+	FA fa13(.a(p13[0]), .b(p13[1]), .ci(p13[2]), .cout(w14[0]), .S(w13[1]));
+	
+	HA ha14(.a(p14[0]), .b(p14[1]), .cout(w15), .S(w14[1]));
+
+endmodule
+
+module final_adder(
+	p15,
+	p14, 
+	p13,
+	p12,
+	p11,
+	p10,
+	p9,
+	p8,
+	p7,
+	p6,
+	p5,
+	p4,
+	p3,
+	p2,
+	p1,
+	p0,
+	product
+);
+	input [0:0] p0, p1, p2, p3, p4, p15;
+	input [1:0] p5, p6, p7, p8, p9, p10, p11, p12, p13, p14;
+	
+	output [15:0] product;
+	
+	assign product = {p15[0], p14[0], p13[0], p12[0], p11[0], p10[0], p9[0], p8[0], p7[0], p6[0], p5[0], p4[0], p3[0], p2[0], p1[0], p0[0]} + {1'b0, p14[1], p13[1], p12[1], p11[1], p10[1], p9[1], p8[1], p7[1], p6[1], p5[1], 5'b0};
+endmodule
+
+module FA(a, b, ci, S, cout);
+	input a, b, ci;
+	output cout, S;
+	assign {cout, S} = a + b + ci;
+endmodule	
+
+module HA(a, b, S, cout);
+	input a, b;
+	output cout, S;
+	assign {cout, S} = a + b;
+endmodule

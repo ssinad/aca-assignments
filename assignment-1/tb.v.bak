@@ -1,0 +1,68 @@
+module tb;
+	parameter n = 32;
+	
+	reg clk = 1, start, is_signed;
+	reg [n - 1:0] a, b;
+	wire [2 * n - 1:0] s;
+	
+	multiplier mu(
+        clk,            // module clock, everything should be done in positive edge of it
+        start,          // indicates all inputs are valid and multiplication should be started
+        is_signed,      // when 1, signed multiplication is intended, otherwise, it's unsigned
+        a,   // first operand,
+        b,   // second operand
+        s   // output result
+    );
+	
+	initial
+		forever
+			#1 clk = !clk;
+	
+	initial
+	begin
+		//give_and_check(-1, -1, 0);
+		give_and_check(-1, -1, 1);
+		//give_and_check(-1, 6, 0);
+		give_and_check(-1, 6, 1);
+		//give_and_check(6, -1, 0);
+		give_and_check(6, -1, 1);
+		//give_and_check((1 << n - 1), -1, 0);
+		give_and_check((1 << n - 1), -1, 1);
+		//give_and_check(-1, (1 << n - 1), 0);
+		give_and_check(-1, (1 << n - 1), 1);
+		//give_and_check (1 << (n - 1), 1 << (n - 1), 0);
+		give_and_check (1 << (n - 1), 1 << (n - 1), 1);
+		//give_and_check(3, 3, 0);
+		give_and_check(3, 3, 1);
+		//give_and_check(303379748, 3230228097, 0);
+		give_and_check(303379748, 3230228097, 0);
+		$stop;
+	end
+	
+	task give_and_check;
+	input [n - 1:0] n1, n2;
+	input sign;
+	reg signed[2 * n - 1:0] s1;
+	reg [2 * n - 1:0] s2;
+	begin
+		a = n1;
+		b = n2;
+		is_signed = sign;
+		#2
+		start = 1;
+		#2
+		start = 0;
+		#40;
+		s1 = $signed(n1) * $signed(n2);
+		s2 = $unsigned(n1) * $unsigned(n2);
+		
+		if ((is_signed && s1 == s) || (!is_signed && s2 ==s))
+			$display("OK");
+		else
+		begin
+			$display("Error");
+			$stop;
+		end
+	end
+	endtask
+endmodule

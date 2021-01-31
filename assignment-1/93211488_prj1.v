@@ -1,0 +1,212 @@
+module multiplier (
+        input clk,            // module clock, everything should be done in positive edge of it
+        input start,          // indicates all inputs are valid and multiplication should be started
+        input is_signed,      // when 1, signed multiplication is intended, otherwise, it's unsigned
+        input [31 : 0] a,   // first operand,
+        input [31 : 0] b,   // second operand
+        output [63 : 0] s   // output result
+    );
+	parameter n = 32;
+	//input clk, arst;
+	
+	wire A_or_0, single_double, cin, init, ShLdP, last_stage;
+	wire signed [n - 1:0] A_mask;
+	wire signed [n + 1:0] A_mult, A_signed_mult;
+	wire signed [n + 1:0] Sum;
+	wire [2:0] last_3_bits;
+	
+	reg [2 * n:0] P;
+	reg [n - 1:0] A;
+	reg sgn;
+	
+	assign  A_mask = (A_or_0)? A : 0; 
+	assign 	A_mult = (single_double)? {A_mask[n - 1] && sgn, A_mask, 1'b0}:{{2{A_mask[n - 1] && sgn}}, A_mask};
+	assign 	A_signed_mult = (cin)? ~A_mult:A_mult;
+	assign Sum = {{2{P[2 * n]}}, P[2 * n:n + 1]} + {A_signed_mult} + {{(n + 1){1'b0}}, cin};
+	
+	always @(posedge clk)
+	begin
+		if (init)
+			P <= {{n{1'b0}}, b, 1'b0};
+		else if (ShLdP)
+			P <= {Sum, P[n:2]};
+		else if (last_stage)
+			P <= {Sum[n - 1:0], P[n:0]};
+	end
+	
+	always @(posedge clk)
+	begin
+		if (init)
+			A <= a;
+	end
+	
+	always @(posedge clk)
+	begin
+		if (init)
+			sgn <= is_signed;
+	end
+	
+	multiplier_ctrl cu(
+	clk,
+	start,
+	init, 
+	ShLdP,
+	last_stage
+	);
+	
+	assign last_3_bits = (last_stage)?{{2{P[0] && sgn}}, P[0]}:P[2:0];
+	
+	mul_LUT lut(
+	last_3_bits,
+	A_or_0, 
+	single_double,  
+	cin
+	);
+	
+	assign s = P[2 * n : 1];
+	
+endmodule
+
+module mul_LUT(
+	B,
+	A_or_0, 
+	single_double,  
+	cin
+);
+	input [2:0] B;
+	output reg A_or_0, single_double, cin;
+	
+	always @(*)
+	begin
+		{A_or_0, single_double, cin} = 3'b100;
+		case (B)
+			3'b000:
+			begin
+				A_or_0 = 1'b0;
+			end
+			3'b001:
+			begin
+				//A_or_0 = 1'b1;
+				//single_double = 1'b0;
+				//cin = 1'b0;
+			end
+			3'b010:
+			begin
+				//A_or_0 = 1'b1;
+				//single_double = 1'b0;
+				//cin = 1'b0;
+			end
+			3'b011:
+			begin
+				//A_or_0 = 1'b1;
+				single_double = 1'b1;
+				//cin = 1'b0;
+			end
+			3'b100:
+			begin
+				//A_or_0 = 1'b1;
+				single_double = 1'b1;
+				cin = 1'b1;
+			end
+			3'b101:
+			begin
+				//A_or_0 = 1'b1;
+				//single_double = 1'b0;
+				cin = 1'b1;
+			end
+			3'b110:
+			begin
+				//A_or_0 = 1'b1;
+				//single_double = 1'b0;
+				cin = 1'b1;
+			end
+			3'b111:
+			begin
+				A_or_0 = 1'b0;
+			end
+		endcase
+	end
+	
+endmodule
+
+module multiplier_ctrl(
+	clk,
+	start,
+	init, 
+	ShLdP,
+	last_stage
+);
+	localparam ready = 1'b0, s0 = 1'b1, s1 = 2'd2, s2 = 2'd3, s3 = 4'd4, s4 = 3'd5, s5 = 3'd6, s6 = 3'd7, s7 = 4'd8, s8 = 4'd9, s9 = 4'd10,
+	s10 = 4'd11, s11 = 4'd12, s12 = 4'd13, s13 = 4'd14, s14 = 4'd15, s15 = 5'd16, s16 = 5'd17, s17 = 5'd18;
+	
+	input clk, start;
+	output reg init, ShLdP, last_stage;
+	reg [4:0] current_state = ready, next_state;
+	
+	always @(posedge clk)
+		current_state <= next_state;
+		
+	always @(*)
+	begin
+		next_state = ready;
+		case (current_state)
+			ready:
+			if (start)
+				next_state = s0;
+			else
+				next_state = ready;
+			s0:
+				next_state = s1;
+			s1:
+				next_state = s2;
+			s2:
+				next_state = s3;
+			s3:
+				next_state = s4;
+			s4:
+				next_state = s5;
+			s5:
+				next_state = s6;
+			s6:
+				next_state = s7;
+			s7:
+				next_state = s8;
+			s8:
+				next_state = s9;
+			s9:
+				next_state = s10;
+			s10:
+				next_state = s11;
+			s11:
+				next_state = s12;
+			s12:
+				next_state = s13;
+			s13:
+				next_state = s14;
+			s14:
+				next_state = s15;
+			s15:
+				next_state = s16;
+			s16:
+				next_state = ready;
+		endcase
+	end
+	
+	always @(*)
+	begin
+		{init, ShLdP} = 2'b01;
+		last_stage = 1'b0;
+		case (current_state)
+			ready:
+				if (start)
+					{init, ShLdP} = 2'b10;
+				else
+					{init, ShLdP} = 2'b00;
+			s16:
+			begin
+				last_stage = 1'b1;
+				ShLdP = 1'b0;
+			end
+		endcase
+	end
+endmodule	

@@ -1,0 +1,11 @@
+*
+
+!*/
+
+# But not these files...
+!.gitignore
+!*.v
+!*.v.bak
+!*.sv
+!*.sv.bak
+!*.hex

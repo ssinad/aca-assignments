@@ -1,0 +1,131 @@
+module tb;
+	reg[31:0] a, b, expected_s;
+	wire [31:0] s;
+	shortreal ar,br;
+	int errors, no_of_tests = 1;
+	//reg x;
+	fp_adder fp_uut
+    (
+        a,
+        b,
+        s
+    );
+	
+	initial
+	begin
+		test_vector(32'h0, 32'h0, 32'h0);
+		test_vector(32'h440d491c, 32'h4d064db7, 32'h4d064dda);
+		test_vector(32'h366b66c4, 32'h42307eb7, 32'h42307eb8);
+		test_vector(32'h12e1798b, 32'h121f73da, 32'h131899bc);
+		test_vector(32'h575360bf, 32'h5c673cd6, 32'h5c6771ae);
+		test_vector(32'h422d54dc, 32'h368e0d66, 32'h422d54dd);
+		test_vector(32'h49f7442b, 32'h50781481, 32'h50781c3b);
+		test_vector(32'h18502b00, 32'h16d47f61, 32'h186abaec);
+		test_vector(32'h4d675968, 32'h4ad42cf7, 32'h4d6dfad0);
+		test_vector(32'h5d240588, 32'h55797cfe, 32'h5d240681);
+		test_vector(32'h285248db, 32'h27251643, 32'h287b8e6c);
+		test_vector(32'h01925662, 32'h81b81010, 32'h8096e6b8);
+		test_vector(32'h00012832, 32'h0014283c, 32'h0015506e);
+		test_vector(32'h00012832, 32'h8014283c, 32'h8013000a);
+		test_vector(32'h00b627be, 32'h000a21a8, 32'h00c04966);
+		test_vector(32'h00b627be, 32'h800a21a8, 32'h00ac0616);
+		test_vector(32'h02682174, 32'h826f0850, 32'h803736e0);
+		test_vector(32'h00d47943, 32'h80c67efc, 32'h000dfa47);
+		test_vector(32'h440d491c, 32'h00000000, 32'h440d491c);
+		test_vector(32'h00004002, 32'h00000002, 32'h00004004);
+		test_vector(32'h3F800001, 32'hBF800001, 32'h00000000);
+		test_vector(32'h3F800001, 32'hBF800000, 32'h34000000);
+		test_vector(32'h40000000, 32'h34000000, 32'h40000000);
+		test_vector(32'h40000000, 32'h34000001, 32'h40000001);
+		test_vector(32'h3fffffff, 32'h34000000, 32'h40000000);
+		test_vector(32'h440d491c, 32'h40000000, 32'h440dc91c);
+		test_vector(32'h407fffff, 32'h347fffff, 32'h40800000);
+		test_vector(32'h407fffff, 32'h34000000, 32'h40800000);
+		test_vector(32'h407fffff, 32'h34400000, 32'h40800000);
+		test_vector(32'h4d064db7, 32'h440d491c,  32'h4d064dda);
+		test_vector(32'h42307eb7, 32'h366b66c4,  32'h42307eb8);
+		test_vector(32'h121f73da, 32'h12e1798b,  32'h131899bc);
+		test_vector(32'h5c673cd6, 32'h575360bf,  32'h5c6771ae);
+		test_vector(32'h368e0d66, 32'h422d54dc,  32'h422d54dd);
+		test_vector(32'h50781481, 32'h49f7442b,  32'h50781c3b);
+		test_vector(32'h16d47f61, 32'h18502b00,  32'h186abaec);
+		test_vector(32'h4ad42cf7, 32'h4d675968,  32'h4d6dfad0);
+		test_vector(32'h55797cfe, 32'h5d240588,  32'h5d240681);
+		test_vector(32'h27251643, 32'h285248db,  32'h287b8e6c);
+		test_vector(32'h81b81010, 32'h01925662,  32'h8096e6b8);
+		test_vector(32'h0014283c, 32'h00012832,  32'h0015506e);
+		test_vector(32'h8014283c, 32'h00012832,  32'h8013000a);
+		test_vector(32'h000a21a8, 32'h00b627be,  32'h00c04966);
+		test_vector(32'h800a21a8, 32'h00b627be,  32'h00ac0616);
+		test_vector(32'h826f0850, 32'h02682174,  32'h803736e0);
+		test_vector(32'h80c67efc, 32'h00d47943,  32'h000dfa47);
+		test_vector(32'h00000000, 32'h440d491c,  32'h440d491c);
+		test_vector(32'h00000002, 32'h00004002,  32'h00004004);
+		test_vector(32'hBF800001, 32'h3F800001,  32'h00000000);
+		test_vector(32'hBF800000, 32'h3F800001,  32'h34000000);
+		test_vector(32'h34000000, 32'h40000000,  32'h40000000);
+		test_vector(32'h34000001, 32'h40000000,  32'h40000001);
+		test_vector(32'h34000000, 32'h3fffffff,  32'h40000000);
+		test_vector(32'h40000000, 32'h440d491c,  32'h440dc91c);
+		test_vector(32'h347fffff, 32'h407fffff,  32'h40800000);
+		test_vector(32'h34000000, 32'h407fffff,  32'h40800000);
+		test_vector(32'h34400000, 32'h407fffff,  32'h40800000);
+		test_vector(32'h15ffc7d4, 32'h1f7fabc1, 32'h1f7fabe1);
+		 errors= 0;
+		  no_of_tests= 1;
+		 for (int i=0;i<no_of_tests;i++)
+		 begin
+			random_test_vector();
+		end
+		 $display("%d (%%%0d) errors are found.\n", errors, (errors*100.0+no_of_tests)/(no_of_tests));
+		$stop;
+		end
+		
+		task random_test_vector;
+		begin
+			//a= $random();
+			//b= $random();
+			reg sa, sb;
+			reg [7:0] ea, eb;
+			reg [22:0] frac_a, frac_b;
+			for (sa = 0; sa <= 1; sa++)
+				for(sb =0; sb <= 1; ++sb)
+					for (ea = 0; ea <= 254; ++ea)
+						for (eb = 0; eb <= 254; ++eb)
+						begin
+							frac_a = $random();
+							frac_b = $random();
+							a = {sa, ea, frac_a};
+							b = {sb, eb, frac_b};
+							ar= $bitstoshortreal(a);
+							br= $bitstoshortreal(b);
+							expected_s= $shortrealtobits(ar+ br);
+							#2;
+							if (s!= expected_s && expected_s[30:23]!=255 && a[30:23]!=255 && b[30:23]!=255)
+							begin
+								errors++;
+								$display("Error!\n%f + %f = expected %f got %f\n%b",a, b, expected_s, s, s ^ expected_s);
+								$stop;  
+							end
+							else
+								$display("Hoorah!")
+						end
+		end
+		endtask
+		
+		task test_vector;
+		input[31:0] x1, x2, sum;
+		begin		
+			if (x1[30:23] != 8'hff && x2[30:23] != 8'hff && sum[30:23] != 8'hff)
+			begin
+				{a, b, expected_s} = {x1, x2, sum};		
+				#2;	
+				$display("%x", s);		
+				if (s != expected_s)
+				begin
+					$display("Error!\n%b", s ^ expected_s);	$stop;
+				end	
+			end
+		end	
+		endtask
+		endmodule

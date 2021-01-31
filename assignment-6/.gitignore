@@ -1,0 +1,7 @@
+*
+!P6/
+# But not these files...
+!.gitignore
+!*.v
+!*.v.bak
+!*.hex

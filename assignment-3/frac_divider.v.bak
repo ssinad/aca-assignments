@@ -1,0 +1,52 @@
+module frac_divider
+    #(
+        parameter ni = 32,          // number of inputs fractional bits
+        parameter no = 40           // number of output fractional bits after point
+    )
+    (
+        input clk,                  // module clock, everything should be done in positive edges
+        input start,                // indicates all inputs are valid and divide should be initiated
+        input [-1 : -ni] a,         // dividend, in fractional format: 0.a[-1] ... a[-ni]
+        input [-1 : -ni] b,         // divisor, in fractional format:  0.b[-1] ... b[-ni]
+        output [0 : -no] q          // quotient: q[0].q[-1] ... q[-no] = a / b
+    );
+	localparam nb = $clog2(no + 1);
+	
+	reg [ni - 1:0] R, B;
+//	reg [ni:0] R;
+	reg [no:0] Q;
+	
+	wire init, ldR;
+	
+	wire [ni - 1:0] Diff, new_R;
+	wire borrow ,cout;
+	
+	assign {cout, Diff} = (R - B);
+	assign borrow = !cout;
+	assign new_R = (borrow)? R : Diff;
+	
+	always @(posedge clk)
+	begin
+		if (init)
+				B <= b;
+	end
+	
+	always @(posedge clk)
+	begin
+		if (init)
+			R <= a;
+		else if (ldR)
+			R <= {new_R, 1'b0};//{new_R[ni - 2:0], 1'b0};
+	end
+	
+	always @(posedge clk)
+	begin
+		if (init)
+			Q <= 0;
+		else if (ldR)
+			Q <= {Q[no - 1:0], borrow};
+	end
+	
+	assign q = Q;
+	
+endmodule
